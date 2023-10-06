@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: net-client-deployment
+  name: net-client-deployment
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: net-client
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: net-client
+    spec:
+      containers:
+      - image: soyokaze0125/net-client:v1
+        name: net-client
+        resources: {}
+        tty: true
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: net-clinet-service
+  name: net-clinet-service
+spec:
+  ports:
+  - name: "80"
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: net-client-deployment
+  type: ClusterIP
+status:
+  loadBalancer: {}
