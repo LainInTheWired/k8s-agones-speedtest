@@ -22,7 +22,6 @@ spec:
         resources: {}
         tty: true
 status: {}
-
 ---
 apiVersion: v1
 kind: Service
@@ -33,10 +32,10 @@ metadata:
   name: net-clinet-service
 spec:
   ports:
-  - name: "80"
-    port: 80
+  - name: "ipref"
+    port: 5201
     protocol: TCP
-    targetPort: 80
+    targetPort: 5201
   selector:
     app: net-client-deployment
   type: ClusterIP
