@@ -3,30 +3,31 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: net-client-deployment-nginx-iperf-k8s
-  name: net-client-deployment-nginx-iperf-k8s
+    app: clinet-deployment-nginx-iperf-k8s
+  name: clinet-deployment-nginx-iperf-k8s
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: net-client-tcp
+      app: clinet-tcp
   strategy: {}
   template:
     metadata:
       labels:
-        app: net-client-tcp
+        app: clinet-tcp
     spec:
       containers:
       - image: soyokaze0125/my-nginx-iperf3-image:v4
-        name: net-client
+        name: clinet
         resources: {}
         imagePullPolicy: Always
         tty: true
-        args: ["iperf3", "-s", "-p","30007"]
+        # args: ["iperf3", "-s", "-p","80"]
         # args: ["qperf","--listen_port","5001"]
-        # args: ["bash"]
+        args: ["bash"]
+
       nodeSelector:
-        kubernetes.io/hostname: worker1
+        kubernetes.io/hostname: master1
 status: {}
 ---
 apiVersion: v1
@@ -34,17 +35,17 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: net-clinet-service
-  name: net-clinet-service
+    app: clinet-service
+  name: clinet-service
 spec:
   ports:
   - name: "ipref"
-    port: 30007
+    port: 5001
     protocol: TCP
-    targetPort: 30007
-    nodePort: 30007
+    targetPort: 5001
+    
   selector:
-    app: net-client-tcp
+    app: clinet-tcp
   type: NodePort
 status:
   loadBalancer: {}

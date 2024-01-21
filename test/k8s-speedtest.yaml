@@ -22,9 +22,9 @@ spec:
         resources: {}
         imagePullPolicy: Always
         tty: true
-        args: ["iperf3", "-s", "-p","30007"]
+        # args: ["iperf3", "-s", "-p","80"]
         # args: ["qperf","--listen_port","5001"]
-        # args: ["bash"]
+        args: ["bash"]
       nodeSelector:
         kubernetes.io/hostname: worker1
 status: {}

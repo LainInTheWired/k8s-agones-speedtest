@@ -22,7 +22,7 @@ spec:
     # The name of the container to open the port on. Defaults to the game server container if omitted or empty.
     container: simple-game-server
     # the port that is being opened on the game server process
-    containerPort: 30007
+    containerPort: 19766
     # the port exposed on the host, only required when `portPolicy` is "Static". Overwritten when portPolicy is "Dynamic".
     # protocol being used. Defaults to UDP. TCP and TCPUDP are other options
     # - "UDP" (default) use the UDP protocol
@@ -60,7 +60,7 @@ spec:
       - name: simple-game-server
         image:  soyokaze0125/my-nginx-iperf3-image:v4
         imagePullPolicy: Always
-        args: ["iperf3","-s","-p","30007"]
+        args: ["qperf","--listen_port","19766"]
       nodeSelector:
         kubernetes.io/hostname: worker1
 

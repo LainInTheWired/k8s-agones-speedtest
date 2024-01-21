@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: net-client-deployment-nginx-iperf-k8s-udp
+  name: net-client-deployment-nginx-iperf-k8s-udp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: net-client-udp
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: net-client-udp
+    spec:
+      containers:
+      - image: soyokaze0125/my-nginx-iperf3-image:v3
+        name: net-client-udp
+        resources: {}
+        tty: true
+      nodeSelector:
+        kubernetes.io/hostname: worker1
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: net-clinet-service-udp
+  name: net-clinet-service-udp
+spec:
+  ports:
+  - name: "ipref"
+    port: 80
+    protocol: UDP
+    targetPort: 80
+  selector:
+    app: net-client-deployment-nginx-iperf-k8s-udp
+  type: NodePort
+status:
+  loadBalancer: {}

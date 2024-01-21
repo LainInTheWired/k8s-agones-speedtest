@@ -4,7 +4,7 @@ kind: GameServer
 # https://v1-27.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#objectmeta-v1-meta
 metadata:
   # generateName: "gds-example" # generate a unique name, with the given prefix
-  name: "agones-qperf" # set a fixed name
+  name: "nginx-iperf-gds-example" # set a fixed name
 spec:
   # if there is more than one container, specify which one is the game server
   container: example-server
@@ -18,19 +18,18 @@ spec:
     # port is available. When static is the policy specified, `hostPort` is required to be populated
     # - "Passthrough" dynamically sets the `containerPort` to the same value as the dynamically selected hostPort.
     #      This will mean that users will need to lookup what port has been opened through the server side SDK.
-    portPolicy: Static
+    # portPolicy: Static
     # The name of the container to open the port on. Defaults to the game server container if omitted or empty.
     container: simple-game-server
     # the port that is being opened on the game server process
-    containerPort: 30007
+    containerPort: 80
     # the port exposed on the host, only required when `portPolicy` is "Static". Overwritten when portPolicy is "Dynamic".
+    # hostPort: 7777
     # protocol being used. Defaults to UDP. TCP and TCPUDP are other options
     # - "UDP" (default) use the UDP protocol
     # - "TCP", use the TCP protocol
     # - "TCPUDP", uses both TCP and UDP, and exposes the same hostPort for both protocols.
     #       This will mean that it adds an extra port, and the first port is set to TCP, and second port set to UDP
-    hostPort: 7777
-
     protocol: TCP
   # Health checking for the running game server
   health:
@@ -46,9 +45,48 @@ spec:
     failureThreshold: 3
   # Parameters for game server sidecar
   sdkServer:
+    # sdkServer log level parameter has three options:
+    #  - "Info" (default) The SDK server will output all messages except for debug messages
+    #  - "Debug" The SDK server will output all messages including debug messages
+    #  - "Error" The SDK server will only output error messages
     logLevel: Info
+    # grpcPort and httpPort control what ports the sdkserver listens on.
+    # Starting with Agones 1.2 the default grpcPort is 9357 and the default
+    # httpPort is 9358. In earlier releases, the defaults were 59357 and 59358
+    # respectively but as these were in the ephemeral port range they could
+    # conflict with other TCP connections.
     grpcPort: 9357
     httpPort: 9358
+  # [Stage:Alpha]
+  # [FeatureFlag:PlayerTracking]
+  # Players provides the configuration for player tracking features.
+  # Commented out since Alpha, and disabled by default
+  # players:
+  #   # set this GameServer's initial player capacity
+  #   initialCapacity: 10
+  #
+  # [Stage:Alpha]
+  # [FeatureFlag:CountsAndLists]
+  # Counts and Lists provides the configuration for generic (player, room, session, etc.) tracking features.
+  # Commented out since Alpha, and disabled by default
+  # counters: # counters are int64 counters that can be incremented and decremented by set amounts. Keys must be declared at GameServer creation time.
+  #   games: # arbitrary key.
+  #     count: 1 # initial value.
+  #     capacity: 100 # (Optional) Maximum value for the counter. 0 is max(int64).
+  #   sessions:
+  #     count: 1
+  # lists: # lists are lists of values stored against this GameServer that can be added and deleted from. Keys must be declared at GameServer creation time.
+  #   players: # an empty list, with a capacity set to 10.
+  #     capacity: 10 # capacity value, defaults to 1000.
+  #   rooms:
+  #     capacity: 333
+  #     values: # initial set of values in a list.
+  #       - room1
+  #       - room2
+  #       - room3
+  #  
+  # Pod template configuration
+  # https://v1-27.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podtemplate-v1-core
   template:
     # pod metadata. Name & Namespace is overwritten
     metadata:
@@ -58,9 +96,11 @@ spec:
     spec:
       containers:
       - name: simple-game-server
-        image:  soyokaze0125/my-nginx-iperf3-image:v4
+        image:  soyokaze0125/my-nginx-iperf3-image:v2
         imagePullPolicy: Always
-        args: ["iperf3","-s","-p","30007"]
-      nodeSelector:
-        kubernetes.io/hostname: worker1
-
+      # nodeSelector is a label that can be used to tell Kubernetes which host
+      # OS to use. For Windows game servers uncomment the nodeSelector
+      # definition below.
+      # Details: https://kubernetes.io/docs/setup/production-environment/windows/user-guide-windows-containers/#ensuring-os-specific-workloads-land-on-the-appropriate-container-host
+      # nodeSelector:
+      #   kubernetes.io/os: windows

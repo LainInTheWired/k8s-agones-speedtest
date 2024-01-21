@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: net-client
+  name: net-client-deployment-nginx-iperf-k8s
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: net-client
+  template:
+    metadata:
+      labels:
+        app: net-client
+    spec:
+      containers:
+      - image: soyokaze0125/my-nginx-iperf3-image:v2
+        name: net-client
+        resources: {}
+        tty: true
+      nodeSelector:
+        kubernetes.io/hostname: worker1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: net-client
+  name: net-clinet-service
+spec:
+  ports:
+  - name: "ipref"
+    port: 5201
+    protocol: TCP
+    targetPort: 80  # ここを修正（iperf3がポート5201でリッスンしている場合）
+  selector:
+    app: net-client
+  type: NodePort
